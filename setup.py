@@ -5,7 +5,6 @@ import os.path
 import shutil
 import subprocess
 import tarfile
-import tempfile
 from distutils import log
 from distutils.command.build_clib import build_clib as _build_clib
 from distutils.command.build_ext import build_ext as _build_ext
@@ -66,6 +65,7 @@ def download_library(command):
     if command.dry_run:
         return
     libdir = absolute("libsecp256k1")
+    log.debug("libdir {}".format(libdir))
     if os.path.exists(os.path.join(libdir, "autogen.sh")):
         # Library already downloaded
         return
@@ -211,7 +211,8 @@ class build_clib(_build_clib):
                 "--enable-module-extrakeys",
             ])
 
-        with tempfile.TemporaryDirectory() as build_temp:
+        from backports.tempfile import TemporaryDirectory
+        with TemporaryDirectory() as build_temp:
             log.debug("Running configure: {}".format(" ".join(cmd)))
             subprocess.check_call(
                 cmd,
@@ -278,7 +279,7 @@ setup(
     maintainer_email='rusty@rustcorp.com.au',
     license='MIT',
 
-    setup_requires=['cffi>=1.3.0', 'pytest-runner==2.6.2'],
+    setup_requires=['cffi>=1.3.0', 'pytest-runner==2.6.2', 'backports.tempfile'],
     install_requires=['cffi>=1.3.0'],
     tests_require=['pytest==2.8.7'],
 
